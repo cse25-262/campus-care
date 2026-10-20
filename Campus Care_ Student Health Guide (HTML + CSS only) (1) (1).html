@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Campus Care: Student Health Guide (HTML + CSS only)</title>
+<style>
+:root{--bg:#eef5f6;--surface:#fff;--ink:#102a33;--muted:#4b6670;--line:#cfe0e3;--brand:#0d6e78;--brand-ink:#fff;--soft:#d8ecee;--warn:#b4531a;--warnbg:#fbeadb;--urgent:#b3261e;--urgentbg:#fde3e1;--ok:#2a6b3c;--okbg:#e0f1e4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0c1d22;--surface:#142a31;--ink:#e6f1f3;--muted:#9bb5bc;--line:#264249;--brand:#4fc3cf;--brand-ink:#06242a;--soft:#1b3b43;--warn:#f0a56b;--warnbg:#3a2616;--urgent:#ff8a80;--urgentbg:#3d1a18;--ok:#8fd4a0;--okbg:#17321f;color-scheme:dark}}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Figtree",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:"Fraunces",Georgia,"Times New Roman",serif;line-height:1.15;margin:0}
+a{color:var(--brand)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.vh{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+
+/* header + tabs */
+header{border-bottom:1px solid var(--line);background:var(--surface)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+.logo{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:22px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav label{padding:8px 14px;border-radius:999px;color:var(--muted);font-weight:600;cursor:pointer}
+body:has(#t1:checked) label[for=t1],body:has(#t2:checked) label[for=t2],body:has(#t3:checked) label[for=t3],body:has(#t4:checked) label[for=t4],body:has(#t5:checked) label[for=t5]{background:var(--soft);color:var(--ink)}
+body:has(.vh:focus-visible) label:has(.vh:focus-visible),body:has(#t1:focus-visible) label[for=t1],body:has(#t2:focus-visible) label[for=t2],body:has(#t3:focus-visible) label[for=t3],body:has(#t4:focus-visible) label[for=t4],body:has(#t5:focus-visible) label[for=t5]{outline:3px solid var(--brand);outline-offset:2px}
+.panel{display:none;padding-bottom:56px}
+body:has(#t1:checked) #check,body:has(#t2:checked) #topics,body:has(#t3:checked) #services,body:has(#t4:checked) #sources,body:has(#t5:checked) #help{display:block}
+
+/* hero */
+.hero{padding:44px 0 28px}
+.hero h1{font-size:clamp(34px,6vw,58px);font-weight:800;max-width:15ch}
+.hero p{max-width:56ch;color:var(--muted);font-size:18px;margin:16px 0 0}
+.emergency{background:var(--urgentbg);color:var(--urgent);border-radius:12px;padding:12px 16px;font-weight:600;margin:22px 0 0}
+h2{font-size:30px;margin-bottom:6px}
+.sub{color:var(--muted);margin:0 0 22px;max-width:62ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+
+/* chips: labels wrapping hidden inputs */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chip{display:inline-block;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:500;cursor:pointer}
+.chip:has(input:checked){background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.chip.red:has(input:checked){background:var(--urgent);border-color:var(--urgent);color:#fff}
+.chip:has(input:focus-visible){outline:3px solid var(--brand);outline-offset:2px}
+
+/* checker layout */
+.checker{display:grid;gap:22px;grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}
+.row{display:grid;gap:18px;grid-template-columns:1fr 1fr;margin-top:20px}
+@media (max-width:860px){.checker{grid-template-columns:1fr}}
+@media (max-width:720px){.row{grid-template-columns:1fr}}
+.f{display:block;font-weight:600;margin:0 0 8px}
+.btn{background:var(--brand);color:var(--brand-ink);border:0;border-radius:10px;padding:11px 20px;font:inherit;font-weight:600;cursor:pointer;margin-top:6px}
+.btn:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+/* results: hidden until a matching symptom is ticked */
+#out{display:flex;flex-direction:column}
+.res{display:none;border-left:5px solid var(--line);margin-bottom:14px}
+.res.urgent{order:0;border-left-color:var(--urgent)}
+.res.clinic{order:1;border-left-color:var(--warn)}
+.res.self{order:2;border-left-color:var(--ok)}
+body:has(#s-headache:checked) .r-headache,body:has(#s-fever:checked) .r-fever,body:has(#s-sore:checked) .r-sore,body:has(#s-cough:checked) .r-cough,body:has(#s-runny:checked) .r-runny,body:has(#s-nausea:checked) .r-nausea,body:has(#s-diarrhea:checked) .r-diarrhea,body:has(#s-stomach:checked) .r-stomach,body:has(#s-fatigue:checked) .r-fatigue,body:has(#s-sleep:checked) .r-sleep,body:has(#s-anxious:checked) .r-anxious,body:has(#s-mood:checked) .r-mood,body:has(#s-muscle:checked) .r-muscle,body:has(#s-rash:checked) .r-rash,body:has(#s-urine:checked) .r-urine,body:has(#s-eye:checked) .r-eye,body:has(#s-dizzy:checked) .r-dizzy,body:has(#s-chest:checked) .r-chest,body:has(#s-breath:checked) .r-breath{display:block}
+.tag{display:inline-block;border-radius:6px;padding:2px 10px;font-size:13px;font-weight:600;margin-bottom:8px}
+.self .tag{background:var(--okbg);color:var(--ok)}.clinic .tag{background:var(--warnbg);color:var(--warn)}.urgent .tag{background:var(--urgentbg);color:var(--urgent)}
+.self .tag::before{content:"Can usually be managed at home"}.clinic .tag::before{content:"See a clinic or pharmacist"}.urgent .tag::before{content:"Get urgent help"}
+.res h3{font-size:21px}
+.res ul{margin:6px 0 10px;padding-left:20px}
+.see{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:15px}
+.empty{color:var(--muted);text-align:center;padding:32px 12px;display:none}
+body:not(:has(.sym:checked)) .empty{display:block}
+.note{display:none;color:var(--muted);font-size:14px}
+body:has(.sym:checked) .note{display:block}
+
+/* warning banners */
+.alert{display:none;border-radius:12px;padding:12px 16px;font-weight:600;margin-bottom:14px}
+.alert.em{background:var(--urgentbg);color:var(--urgent)}
+.alert.lg{background:var(--warnbg);color:var(--warn)}
+body:has(#s-chest:checked,#s-breath:checked,#v3:checked) .alert.em{display:block}
+body:has(#d3:checked):not(:has(#s-chest:checked,#s-breath:checked,#v3:checked)) .alert.lg{display:block}
+
+/* topics + services grids with CSS-only category filters */
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.grid .card h3{font-size:20px;margin-bottom:6px}
+.grid .card p{margin:0 0 10px;color:var(--muted);font-size:15px}
+.grid .card p.ink{color:var(--ink);margin:0;font-weight:600}
+body:has(#c-sleep:checked) .topic:not(.k-sleep),body:has(#c-mind:checked) .topic:not(.k-mind),body:has(#c-body:checked) .topic:not(.k-body),body:has(#c-sex:checked) .topic:not(.k-sex),body:has(#c-subs:checked) .topic:not(.k-subs),body:has(#c-safe:checked) .topic:not(.k-safe),
+body:has(#m-med:checked) .svc:not(.k-med),body:has(#m-ment:checked) .svc:not(.k-ment),body:has(#m-sex:checked) .svc:not(.k-sex),body:has(#m-urg:checked) .svc:not(.k-urg){display:none}
+
+.tl{color:var(--brand);font-weight:600;text-decoration:underline;cursor:pointer}
+.sos{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:28px}
+.sos a{display:block;background:var(--urgentbg);color:var(--urgent);border-radius:14px;padding:16px 18px;text-decoration:none;font-weight:600}
+.sos a b{display:block;font:800 34px/1.1 Fraunces,Georgia,serif}
+h3.sec{font-size:24px;margin:34px 0 6px}
+.stat b{display:block;font:800 38px/1.1 Fraunces,Georgia,serif;color:var(--brand);margin-bottom:6px}
+.stat .go{background:var(--okbg);color:var(--ok);border-radius:8px;padding:10px 12px;font-size:15px;margin:0 0 10px;font-weight:500}
+.small{font-size:13px;color:var(--muted)}
+.btnl{display:inline-block;background:var(--brand);color:var(--brand-ink);border-radius:10px;padding:10px 18px;font-weight:600;text-decoration:none}
+.card .btnl{margin-top:4px}
+footer{border-top:1px solid var(--line);padding:24px 0 36px;color:var(--muted);font-size:14px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+<input class="vh" type="radio" name="tab" id="t1" checked aria-label="Symptom checker">
+<input class="vh" type="radio" name="tab" id="t2" aria-label="Health topics">
+<input class="vh" type="radio" name="tab" id="t3" aria-label="Services">
+<input class="vh" type="radio" name="tab" id="t4" aria-label="Trusted sources">
+<input class="vh" type="radio" name="tab" id="t5" aria-label="Get help">
+
+<header><div class="wrap">
+<div class="logo">Campus Care</div>
+<nav aria-label="Sections">
+<label for="t1">Symptom checker</label><label for="t2">Health topics</label><label for="t3">Services</label><label for="t4">Trusted sources</label><label for="t5">Get help</label>
+</nav></div></header>
+
+<main class="wrap">
+<div class="hero">
+<h1>Health answers for student life.</h1>
+<p>Pick your symptoms, narrow them down, and see practical next steps. Everything here is general information from well-established health guidance, not a diagnosis.</p>
+<div class="emergency">Chest pain, trouble breathing, fainting, severe bleeding, thoughts of self-harm: call your local emergency number or go to the nearest emergency department now.</div>
+</div>
+
+<!-- SYMPTOM CHECKER -->
+<section class="panel" id="check">
+<h2>Symptom checker</h2>
+<p class="sub">Tick everything you’re experiencing. Matching suggestions appear instantly, with the most urgent shown first.</p>
+<div class="checker">
+<form class="card" aria-label="Symptoms">
+<span class="f">Your symptoms</span>
+<div class="chips">
+<label class="chip"><input class="vh sym" type="checkbox" id="s-headache">Headache</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-fever">Fever</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-sore">Sore throat</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-cough">Cough</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-runny">Runny or blocked nose</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-nausea">Nausea or vomiting</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-diarrhea">Diarrhoea</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-stomach">Stomach pain</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-fatigue">Tiredness</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-sleep">Trouble sleeping</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-anxious">Anxiety or worry</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-mood">Low mood</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-muscle">Muscle or back pain</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-rash">Skin rash or itching</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-urine">Painful urination</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-eye">Red or itchy eyes</label>
+<label class="chip"><input class="vh sym" type="checkbox" id="s-dizzy">Dizziness</label>
+<label class="chip red"><input class="vh sym" type="checkbox" id="s-chest">Chest pain</label>
+<label class="chip red"><input class="vh sym" type="checkbox" id="s-breath">Shortness of breath</label>
+</div>
+<div class="row">
+<div><span class="f">How long?</span><div class="chips">
+<label class="chip"><input class="vh" type="radio" name="dur" id="d1">Under 3 days</label>
+<label class="chip"><input class="vh" type="radio" name="dur" id="d2">3 to 7 days</label>
+<label class="chip"><input class="vh" type="radio" name="dur" id="d3">Over a week</label></div></div>
+<div><span class="f">How bad?</span><div class="chips">
+<label class="chip"><input class="vh" type="radio" name="sev" id="v1">Mild</label>
+<label class="chip"><input class="vh" type="radio" name="sev" id="v2">Moderate</label>
+<label class="chip"><input class="vh" type="radio" name="sev" id="v3">Severe</label></div></div>
+</div>
+<button class="btn" type="reset">Clear all</button>
+</form>
+
+<div id="out" aria-live="polite">
+<div class="alert em">Your answers include warning signs. Seek urgent medical care now or call your local emergency number rather than waiting.</div>
+<div class="alert lg">Symptoms lasting over a week are worth discussing with a clinician, whatever the cause.</div>
+<div class="card empty">Tick at least one symptom to see suggestions.</div>
+
+<article class="card res self r-runny r-sore r-cough r-fatigue r-fever"><span class="tag"></span><h3>Common cold</h3><ul><li>Rest and drink plenty of fluids</li><li>Warm drinks, saline nose spray or steam can ease congestion</li><li>Paracetamol or ibuprofen for aches, following the label</li></ul><div class="see"><strong>Get help if:</strong> symptoms last longer than 10 days, or you develop a high fever or breathing difficulty.</div></article>
+
+<article class="card res clinic r-fever r-cough r-fatigue r-muscle r-headache r-sore"><span class="tag"></span><h3>Influenza (flu)</h3><ul><li>Rest, fluids and fever relief</li><li>Stay away from classes and shared spaces while feverish</li><li>Cover coughs and wash hands often</li></ul><div class="see"><strong>Get help if:</strong> you have asthma or another long-term condition, symptoms worsen after a few days, or you struggle to breathe.</div></article>
+
+<article class="card res self r-headache r-anxious r-sleep r-fatigue r-muscle"><span class="tag"></span><h3>Tension headache</h3><ul><li>Drink water and eat regular meals</li><li>Take screen breaks and stretch your neck and shoulders</li><li>Prioritise 7 to 9 hours of sleep</li></ul><div class="see"><strong>Get help if:</strong> the headache is sudden and severe, follows a head injury, or comes with fever and a stiff neck.</div></article>
+
+<article class="card res clinic r-headache r-nausea r-dizzy r-eye"><span class="tag"></span><h3>Migraine</h3><ul><li>Rest in a dark, quiet room</li><li>Keep a diary of triggers such as skipped meals, poor sleep or stress</li><li>A pharmacist can advise on suitable pain relief</li></ul><div class="see"><strong>Get help if:</strong> migraines are frequent, new for you, or come with weakness, confusion or vision loss.</div></article>
+
+<article class="card res self r-sore r-fever r-cough r-runny"><span class="tag"></span><h3>Sore throat (usually viral)</h3><ul><li>Warm fluids, lozenges and rest</li><li>Gargle with warm salty water</li><li>Avoid smoking and vaping</li></ul><div class="see"><strong>Get help if:</strong> you cannot swallow, have a very high fever, or symptoms last more than a week.</div></article>
+
+<article class="card res self r-nausea r-diarrhea r-stomach r-fever r-fatigue"><span class="tag"></span><h3>Gastroenteritis (stomach bug)</h3><ul><li>Sip oral rehydration solution or water often</li><li>Eat bland food once vomiting settles</li><li>Wash hands thoroughly; avoid preparing food for others</li></ul><div class="see"><strong>Get help if:</strong> there is blood in stool, signs of dehydration (very dark urine, dizziness), or it lasts over 3 days.</div></article>
+
+<article class="card res self r-stomach r-nausea"><span class="tag"></span><h3>Indigestion or reflux</h3><ul><li>Eat smaller meals and avoid late-night eating</li><li>Limit caffeine, alcohol and very spicy food</li><li>A pharmacist can suggest antacids</li></ul><div class="see"><strong>Get help if:</strong> pain is severe, persistent, or you vomit blood or lose weight without trying.</div></article>
+
+<article class="card res self r-fatigue r-sleep r-headache r-anxious r-dizzy r-stomach"><span class="tag"></span><h3>Stress or sleep deprivation</h3><ul><li>Keep a regular sleep schedule and limit late caffeine</li><li>Break study into blocks with short walks</li><li>Talk to a friend, mentor or counsellor early</li></ul><div class="see"><strong>Get help if:</strong> symptoms affect your studies or daily life for more than two weeks.</div></article>
+
+<article class="card res clinic r-anxious r-sleep r-stomach r-fatigue r-dizzy r-breath"><span class="tag"></span><h3>Anxiety</h3><ul><li>Try slow breathing: in for 4 counts, out for 6</li><li>Move your body daily and limit caffeine</li><li>Counselling and talking therapies are effective</li></ul><div class="see"><strong>Get help if:</strong> anxiety is constant, you have panic attacks, or it limits what you can do.</div></article>
+
+<article class="card res clinic r-mood r-fatigue r-sleep r-anxious"><span class="tag"></span><h3>Low mood or depression</h3><ul><li>Keep simple routines: sleep, meals, daylight, movement</li><li>Tell someone you trust how you are feeling</li><li>Student counselling services are there for this</li></ul><div class="see"><strong>Get help if:</strong> low mood lasts more than two weeks. If you have thoughts of harming yourself, seek help immediately.</div></article>
+
+<article class="card res clinic r-urine r-stomach r-fever"><span class="tag"></span><h3>Urinary tract infection</h3><ul><li>Drink water and avoid holding urine</li><li>A clinician can confirm and prescribe treatment if needed</li></ul><div class="see"><strong>Get help if:</strong> you have fever, back or side pain, or blood in urine. Get seen the same day.</div></article>
+
+<article class="card res self r-muscle"><span class="tag"></span><h3>Muscle strain</h3><ul><li>Rest, then gentle movement</li><li>Apply a cold pack in the first 48 hours, then warmth</li><li>Check your desk and study posture</li></ul><div class="see"><strong>Get help if:</strong> pain follows a fall, causes numbness, or has not improved after two weeks.</div></article>
+
+<article class="card res self r-runny r-eye r-cough r-rash"><span class="tag"></span><h3>Hay fever or allergic rhinitis</h3><ul><li>Avoid known triggers and keep windows closed on high-pollen days</li><li>Shower after being outdoors</li><li>Ask a pharmacist about antihistamines</li></ul><div class="see"><strong>Get help if:</strong> symptoms disrupt sleep or you also wheeze or feel breathless.</div></article>
+
+<article class="card res self r-eye"><span class="tag"></span><h3>Conjunctivitis (pink eye)</h3><ul><li>Clean eyelids with clean, cool water and a fresh cloth</li><li>Do not share towels; wash hands often</li><li>Stop wearing contact lenses until it clears</li></ul><div class="see"><strong>Get help if:</strong> pain, light sensitivity, reduced vision, or no improvement after a few days.</div></article>
+
+<article class="card res self r-rash"><span class="tag"></span><h3>Skin irritation or contact dermatitis</h3><ul><li>Avoid the suspected trigger such as a new soap or detergent</li><li>Use fragrance-free moisturiser</li><li>A pharmacist can suggest mild creams</li></ul><div class="see"><strong>Get help if:</strong> the rash spreads quickly, blisters, looks infected, or comes with fever.</div></article>
+
+<article class="card res urgent r-breath r-cough r-chest r-fatigue"><span class="tag"></span><h3>Asthma or lung problem</h3><ul><li>Sit upright and use your prescribed inhaler if you have one</li><li>Move away from smoke or allergens</li></ul><div class="see"><strong>Get help if:</strong> breathlessness is new, severe, or not easing. Seek urgent care.</div></article>
+
+<article class="card res urgent r-chest r-breath r-dizzy r-nausea"><span class="tag"></span><h3>Possible heart or serious chest problem</h3><ul><li>Stop what you are doing and call emergency services</li><li>Do not drive yourself</li></ul><div class="see"><strong>Get help if:</strong> chest pain or pressure with breathlessness needs emergency assessment immediately.</div></article>
+
+<p class="note">These are possibilities based on common patterns, not a diagnosis. Many conditions share symptoms. <label for="t5" class="tl">Need care now? See where to get help.</label></p>
+</div>
+</div>
+</section>
+
+<!-- TOPICS -->
+<section class="panel" id="topics">
+<h2>Health topics</h2>
+<p class="sub">Short, practical guides on what affects students most.</p>
+<div class="chips">
+<label class="chip"><input class="vh" type="radio" name="cat" id="c-all" checked>All</label>
+<label class="chip"><input class="vh" type="radio" name="cat" id="c-sleep">Sleep</label>
+<label class="chip"><input class="vh" type="radio" name="cat" id="c-mind">Mind</label>
+<label class="chip"><input class="vh" type="radio" name="cat" id="c-body">Body</label>
+<label class="chip"><input class="vh" type="radio" name="cat" id="c-sex">Sexual health</label>
+<label class="chip"><input class="vh" type="radio" name="cat" id="c-subs">Substances</label>
+<label class="chip"><input class="vh" type="radio" name="cat" id="c-safe">Safety</label>
+</div>
+<div class="grid">
+<article class="card topic k-sleep"><h3>Sleep and study</h3><p>Most adults need 7 to 9 hours. Keep a steady wake time, avoid caffeine after midday, and keep screens out of bed. All-nighters hurt memory more than they help.</p></article>
+<article class="card topic k-mind"><h3>Managing stress</h3><p>Plan your week, break big tasks down, and move daily. Stress that disrupts sleep or appetite for weeks deserves support from counselling.</p></article>
+<article class="card topic k-mind"><h3>Anxiety and low mood</h3><p>Common among students and very treatable. Talking therapies, routine, exercise and social connection all help. Reach out early.</p></article>
+<article class="card topic k-body"><h3>Eating well on a budget</h3><p>Build meals around beans, eggs, vegetables, whole grains and fruit. Don’t skip breakfast, and keep water with you.</p></article>
+<article class="card topic k-body"><h3>Staying active</h3><p>Aim for 150 minutes of moderate activity weekly. Walking between classes and short stretch breaks count.</p></article>
+<article class="card topic k-body"><h3>Infection prevention</h3><p>Wash hands, stay up to date with vaccinations, and don’t share cups or utensils. Stay home when you have a fever.</p></article>
+<article class="card topic k-sex"><h3>Sexual and reproductive health</h3><p>Use condoms, get tested regularly, and ask a clinic about contraception. Services are confidential and judgement-free.</p></article>
+<article class="card topic k-subs"><h3>Alcohol, vaping and drugs</h3><p>Know the risks, never mix substances, look after friends, and ask for help if use feels out of control.</p></article>
+<article class="card topic k-body"><h3>Eyes, posture and screens</h3><p>Follow the 20-20-20 rule: every 20 minutes look 20 feet away for 20 seconds. Set your screen at eye level.</p></article>
+<article class="card topic k-safe"><h3>First aid basics</h3><p>Cool burns under running water for 20 minutes, apply pressure to bleeding, and call emergency services for serious injuries.</p></article>
+</div>
+</section>
+
+<!-- SERVICES -->
+<section class="panel" id="services">
+<h2>Health services for students</h2>
+<p class="sub">Know what each service is for and what to bring. Check your own campus website or student affairs office for exact locations, hours and costs.</p>
+<div class="chips">
+<label class="chip"><input class="vh" type="radio" name="svc" id="m-all" checked>All</label>
+<label class="chip"><input class="vh" type="radio" name="svc" id="m-med">Medical</label>
+<label class="chip"><input class="vh" type="radio" name="svc" id="m-ment">Mental health</label>
+<label class="chip"><input class="vh" type="radio" name="svc" id="m-sex">Sexual health</label>
+<label class="chip"><input class="vh" type="radio" name="svc" id="m-urg">Urgent</label>
+</div>
+<div class="grid">
+<article class="card svc k-med"><h3>Campus health clinic</h3><p>First stop for illness, injuries, check-ups, vaccinations and referrals.</p><p class="ink">Bring: student ID, medical history, list of current medicines.</p></article>
+<article class="card svc k-ment"><h3>Counselling service</h3><p>Confidential support for stress, anxiety, low mood, grief and relationships. Often free for students.</p><p class="ink">Ask: how to book, wait times, and whether crisis appointments exist.</p></article>
+<article class="card svc k-med"><h3>Pharmacy</h3><p>Advice and treatment for minor ailments such as colds, hay fever, mild pain and skin irritation.</p><p class="ink">Ask: whether the medicine is safe with others you take.</p></article>
+<article class="card svc k-sex"><h3>Sexual and reproductive health clinic</h3><p>Contraception, STI testing, pregnancy care and counselling, confidential.</p><p class="ink">Ask: what testing is available and how results are shared.</p></article>
+<article class="card svc k-urg"><h3>Emergency department</h3><p>For chest pain, severe breathing trouble, serious injury, heavy bleeding or loss of consciousness.</p><p class="ink">Call your local emergency number if you can’t travel safely.</p></article>
+<article class="card svc k-ment k-urg"><h3>Crisis and helplines</h3><p>Free, confidential support if you feel overwhelmed or unsafe, available outside office hours.</p><p class="ink">Search your country’s official mental health helpline.</p></article>
+</div>
+</section>
+
+<!-- SOURCES -->
+<section class="panel" id="sources">
+<h2>Trusted sources</h2>
+<p class="sub">When you want to read further, use organisations that review their medical content and cite evidence.</p>
+<div class="grid">
+<div class="card"><h3>World Health Organization</h3><p>Global public health guidance, fact sheets on diseases, vaccines and mental health.</p><a href="https://www.who.int/health-topics" target="_blank" rel="noopener">who.int</a></div>
+<div class="card"><h3>NHS</h3><p>Plain-language symptom and condition pages written and reviewed by clinicians.</p><a href="https://www.nhs.uk/conditions/" target="_blank" rel="noopener">nhs.uk</a></div>
+<div class="card"><h3>MedlinePlus</h3><p>US National Library of Medicine: conditions, medicines and tests explained simply.</p><a href="https://medlineplus.gov/" target="_blank" rel="noopener">medlineplus.gov</a></div>
+<div class="card"><h3>CDC</h3><p>Infectious disease, vaccination, injury prevention and healthy living.</p><a href="https://www.cdc.gov/" target="_blank" rel="noopener">cdc.gov</a></div>
+</div>
+</section>
+<!-- GET HELP -->
+<section class="panel" id="help">
+<h2>Get help</h2>
+<p class="sub">Real numbers, real places, and what help is available. Tap a number to call from your phone.</p>
+
+<div class="sos">
+<a href="tel:997"><b>997</b>Ambulance (toll free)</a>
+<a href="tel:999"><b>999</b>Police (toll free)</a>
+<a href="tel:998"><b>998</b>Fire brigade (toll free)</a>
+</div>
+<p class="small">When calling 997, give your exact location or landmark, what happened, how many people are hurt, and a number to call you back. The Ministry of Health and Wellness lists Palapye among the towns covered. <a href="https://gov.bw/public-health-services/emergency-medical-services-ambulance-services" target="_blank" rel="noopener">Official ambulance service page</a></p>
+
+<h3 class="sec">Hospitals and clinics near Palapye</h3>
+<p class="sub">Tap a name to open it in Google Maps for directions. Call ahead when you can, as services and opening hours can change.</p>
+<p><a class="btnl" href="https://www.google.com/maps/search/?api=1&query=hospitals+near+me" target="_blank" rel="noopener">Find hospitals near my current location</a></p>
+<div class="grid">
+<article class="card"><h3>Palapye Primary Hospital</h3><p>Government hospital serving the Palapye area, including emergency and maternity care. A health-facility directory lists it as open every day, around the clock.</p><a href="https://www.google.com/maps/search/?api=1&query=Palapye+Primary+Hospital+Botswana" target="_blank" rel="noopener">Open in Maps</a></article>
+<article class="card"><h3>Riverside Hospital, Palapye</h3><p>Private hospital in Palapye. Ask about fees and whether your medical aid or student insurance is accepted.</p><a href="https://www.google.com/maps/search/?api=1&query=Riverside+Hospital+Palapye+Botswana" target="_blank" rel="noopener">Open in Maps</a></article>
+<article class="card"><h3>Kediretswe and Lotsane clinics</h3><p>Public clinics in Palapye for minor illness, check-ups, family planning and HIV testing. Cheaper and quicker than the hospital for non-emergencies.</p><a href="https://www.google.com/maps/search/?api=1&query=Kediretswe+Clinic+Palapye" target="_blank" rel="noopener">Kediretswe in Maps</a> · <a href="https://www.google.com/maps/search/?api=1&query=Lotsane+Clinic+Palapye" target="_blank" rel="noopener">Lotsane in Maps</a></article>
+<article class="card"><h3>Sekgoma Memorial Hospital, Serowe</h3><p>Referral hospital about 40 km from Palapye, used when Palapye needs to send patients for further care.</p><a href="https://www.google.com/maps/search/?api=1&query=Sekgoma+Memorial+Hospital+Serowe" target="_blank" rel="noopener">Open in Maps</a></article>
+<article class="card"><h3>Mahalapye District Hospital</h3><p>District hospital about 72 km from Palapye, the other hospital Palapye refers to.</p><a href="https://www.google.com/maps/search/?api=1&query=Mahalapye+District+Hospital" target="_blank" rel="noopener">Open in Maps</a></article>
+</div>
+<p class="small">Source: Botswana Daily News (BOPA) reports from 2020 to 2024 and a health-facility directory. A new 73-bed Palapye Primary Hospital has been planned, so check what is currently open.</p>
+
+<h3 class="sec">What the numbers say, and what help is out there</h3>
+<p class="sub">You are not alone, and help works. Each figure below is paired with what you can do about it.</p>
+<div class="grid">
+<article class="card stat"><b>35%</b><p>of first-year university students across 19 colleges in 8 countries (including South Africa) screened positive for at least one common mental disorder in their lifetime. 31% did in the past 12 months.</p><div class="go">Get help: book a counselling session or ask your campus clinic for a mental health referral. Most conditions begin in the teen years and respond well to early support.</div><a href="https://dspace.umh.es/handle/11000/39872?locale=en" target="_blank" rel="noopener">WHO World Mental Health college study (2018)</a></article>
+<article class="card stat"><b>21.2%</b><p>of those students reported major depression at some point, and 18.6% reported generalised anxiety.</p><div class="go">Get help: persistent low mood or constant worry for two weeks or more is worth raising with a nurse, doctor or counsellor.</div><a href="https://www.jhunewsletter.com/article/2018/09/one-in-three-freshmen-has-mental-health-issues" target="_blank" rel="noopener">Report on the study</a></article>
+<article class="card stat"><b>20.4%</b><p>of students reported severe difficulty in daily roles such as study, work or relationships. Depression and anxiety were linked to the highest risk.</p><div class="go">Get help: tell your lecturers early and ask about academic support. Treating the cause protects your grades.</div><a href="https://www.mentalhealthdataprizeafrica.aphrc.org/repository/paper/38574/severe-role-impairment-associated-with-mental-disorders-results-of-the-who-world-mental-health-surveys-international-college-student-project" target="_blank" rel="noopener">Study summary</a></article>
+<article class="card stat"><b>31.1%</b><p>of young people in Botswana had an HIV test in the 12 months before the 2021 national survey. Among young people living with HIV, 84.5% knew their status.</p><div class="go">Get help: free, confidential testing is available at public clinics. Among young people who know their status, 98.5% are on treatment and 91.6% of those on treatment are virally suppressed.</div><a href="https://www.beintheknow.org/news-and-blogs/botswana-course-end-aids-epidemic-2030" target="_blank" rel="noopener">Botswana AIDS Impact Survey summary</a> · <a href="https://stacks.cdc.gov/view/cdc/159511" target="_blank" rel="noopener">Full paper</a></article>
+<article class="card stat"><b>120%</b><p>average bed occupancy at Palapye hospital, reported in 2022 for a catchment of about 95,500 people. Queues are long.</p><div class="go">Get help: use clinics or a pharmacist for minor problems, go early in the day, and keep the hospital and 997 for emergencies.</div><a href="https://dailynews.gov.bw/news-detail/70551" target="_blank" rel="noopener">Botswana Daily News report</a></article>
+</div>
+
+<h3 class="sec">Talk to someone</h3>
+<div class="grid">
+<article class="card"><h3>Lifeline Botswana</h3><p>Counselling and crisis support. Phone numbers differ between listings, so confirm the current number on their official page before relying on it.</p><a href="https://www.google.com/search?q=Lifeline+Botswana+counselling+contact" target="_blank" rel="noopener">Find current contact details</a></article>
+<article class="card"><h3>Your campus counsellor or dean of students</h3><p>Ask about free student counselling, emergency accommodation, and academic leave for health reasons.</p></article>
+<article class="card"><h3>WHO mental health guidance</h3><p>Free, evidence-based information on common mental health conditions and where to start.</p><a href="https://www.who.int/health-topics/mental-health" target="_blank" rel="noopener">who.int/mental-health</a></article>
+</div>
+<p class="small">Statistics come from the sources linked on each card and describe groups of people, not you. They are general information and not medical advice.</p>
+</section>
+</main>
+
+<footer><div class="wrap">This site offers general education only. It cannot diagnose conditions or replace a doctor, nurse or pharmacist. If you are worried about your health, speak to a qualified professional.</div></footer>
+</body>
+</html>
